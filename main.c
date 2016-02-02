@@ -18,12 +18,17 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <libconfig.h>
+#include <unistd.h>
+#include <ctype.h>
+/* #include <libconfig.h> */
 
 #define PARAMS char *pass, int cnt, void **nxt_f
 #define LIST_MAX 100  // biggest replace list
+#define MAX_PASS_LEN 1024
+
 
 FILE *OUTPUT;
+unsigned int TOTAL_OUT;
   
 void error(char *msg);
 void space_replace(PARAMS);
@@ -31,8 +36,16 @@ void punct_ending(PARAMS);
 void l33t(PARAMS);
 void ucase_flip(PARAMS);
 
+
 void output(PARAMS){
-  fprintf(OUTPUT, "%s\n", pass);
+  if (OUTPUT == stdout){
+    fprintf(OUTPUT, "%s\n", pass);
+  } else{
+    if ( TOTAL_OUT == 0 ) printf("\n");
+    TOTAL_OUT += fprintf(OUTPUT, "%s\n", pass);
+    fflush(stdout);
+    printf("\rFile size: %10d bytes\r\r", TOTAL_OUT);
+  }
 }
 void init_bounds(char *list[], int *ptr_l, int *ptr_max){
   int max = 0; 
@@ -49,16 +62,54 @@ void init_bounds(char *list[], int *ptr_l, int *ptr_max){
   *ptr_max = max;
 }
 
+void help_menu(){
+  printf(
+    "\t-h:            help menu\n"
+    "\t-i <fname>:    input file (required)\n"
+    "\t-o <oname>:    output file, stdout by default\n"
+  );
+  exit(1);
+}
+
 int main(int argc, char *argv[]){
-  if (argc < 2 ) error("need word to mutate");
-  else if (argc > 3) error("do you know what you are doing?");
-  else if (argc == 3){
-    if (( OUTPUT = fopen(argv[2], "a+") ) == NULL)
-      error("could not open out file");
+  FILE *ifp = NULL;
+  int c;
+  OUTPUT = stdout;
+  TOTAL_OUT = 0;
+
+  while ((c = getopt (argc, argv, "hi:o:")) != -1){
+    switch (c) {
+      case 'h':
+        help_menu();
+        break;
+      case 'o':
+        if (( OUTPUT = fopen(optarg, "a+") ) == NULL)
+          error("could not open out file");
+        fseek(OUTPUT, 0, SEEK_END);
+        TOTAL_OUT = ftell(OUTPUT);
+        rewind(OUTPUT);
+        printf("file size: %d", TOTAL_OUT);
+        break;
+      case 'i':
+        if (( ifp = fopen(optarg, "r") ) == NULL)
+          error("could not open in file");
+        break;
+      case '?':
+        if (optopt == 'o' || optopt == 'i' ){
+          fprintf (stderr, "Option -%c requires an argument.\n", optopt);
+          help_menu();
+        } else{
+          fprintf (stderr, "You swoopsed a command line parameter\n");
+          help_menu();
+        }
+      default:
+        abort();
+    }
   }
-  else OUTPUT = stdout;
+  if ( ifp == NULL ) error("need input file.");
 
   // function list
+  // TODO: all user to modify this list with command line parmaaters
   void *nxt_f[] = { 
     &space_replace,
     &punct_ending, 
@@ -67,10 +118,27 @@ int main(int argc, char *argv[]){
     &output 
   };
 
+  // make first function pointer into a 
+  // callable function "func"
   int (*func)(PARAMS) = nxt_f[0];
-  func(argv[1], 0, &nxt_f[1] );
 
-  if ( OUTPUT != stdout ) fclose(OUTPUT);
+  // run function on each line of input file
+  char pass[MAX_PASS_LEN];
+  size_t len;
+  while (fgets(pass, MAX_PASS_LEN, ifp)) {
+      len = strlen(pass);
+      if (len && (pass[len - 1] != '\n')) {
+        error("pass was too long");
+      }
+      pass[len-1] = 0x00;
+      /* printf("pass: \"%s\"\n", pass); */
+      func(pass, 0, &nxt_f[1] );
+  }
+  if ( OUTPUT != stdout ){
+    fclose(OUTPUT);
+    printf("\n");
+  }
+  fclose(ifp);
 
   return 0;
 }
@@ -78,6 +146,8 @@ int main(int argc, char *argv[]){
 void error(char *msg){
   if (errno) perror(msg);
   else fprintf(stderr, "%s\n", msg);
+  if (errno == 0)
+    exit(1);
   exit(errno);
 }
 void space_replace(PARAMS){
@@ -130,7 +200,8 @@ void punct_ending(PARAMS){
   func(pass, 0, nxt_f+1);
 
   strcpy(pass_new, pass);
-  for (int i=0; i<punct_len; i++){
+  int i;
+  for (i=0; i<punct_len; i++){
     strncpy(pass_new + lpass, endings[i], punct_max_add+1);
     func(pass_new, 0, nxt_f+1);
   }

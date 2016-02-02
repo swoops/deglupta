@@ -20,3 +20,10 @@ output twice as fast as it was created.  So I could either add threading or
 write it in a more efferent language.  Adding threading would eat more CPU when 
 I wanted to pipe the output to John or something.  So instead I wrote it in C.  
 Also C is fun!
+# TODO
+* Allow users to submit a list of functions to run through.
+* Add more functions.
+* Make it more modular.
+* KILL on file size limit
+* Resume from the last word
+

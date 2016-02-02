@@ -3,7 +3,7 @@ CC = gcc
 CFLAGS = -Wall
 
 TARGET = mutator
-LIBRARIES = -lconfig
+LIBRARIES = 
 
 all: $(TARGET)
 
