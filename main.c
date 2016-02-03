@@ -20,64 +20,18 @@
 #include <errno.h>
 #include <unistd.h>
 #include <ctype.h>
-/* #include <libconfig.h> */
-
-#define PARAMS char *pass, int cnt, void **nxt_f
-#define LIST_MAX 100  // biggest replace list
-#define MAX_PASS_LEN 1024
-
-
-FILE *OUTPUT;
-unsigned int TOTAL_OUT;
-  
-void error(char *msg);
-void space_replace(PARAMS);
-void punct_ending(PARAMS);
-void l33t(PARAMS);
-void ucase_flip(PARAMS);
-
-
-void output(PARAMS){
-  if (OUTPUT == stdout){
-    fprintf(OUTPUT, "%s\n", pass);
-  } else{
-    if ( TOTAL_OUT == 0 ) printf("\n");
-    TOTAL_OUT += fprintf(OUTPUT, "%s\n", pass);
-    fflush(stdout);
-    printf("\rFile size: %10d bytes\r\r", TOTAL_OUT);
-  }
-}
-void init_bounds(char *list[], int *ptr_l, int *ptr_max){
-  int max = 0; 
-  int l = 0;  
-
-  int relmax=0;
-  while ( list[l] != NULL){
-    relmax = strlen(list[l]);
-    if ( relmax > max ) max = relmax;
-    l++;
-    if (l >= LIST_MAX) error("init_bounds: someone did not NULL terminate the list...");
-  }
-  *ptr_l = l;
-  *ptr_max = max;
-}
-
-void help_menu(){
-  printf(
-    "\t-h:            help menu\n"
-    "\t-i <fname>:    input file (required)\n"
-    "\t-o <oname>:    output file, stdout by default\n"
-  );
-  exit(1);
-}
+#include "main.h"
 
 int main(int argc, char *argv[]){
   FILE *ifp = NULL;
   int c;
   OUTPUT = stdout;
+  RECOVER = NULL;
   TOTAL_OUT = 0;
+  MAX_OUTPUT = 0x0100000000; // 4294967296 or about 4G
 
-  while ((c = getopt (argc, argv, "hi:o:")) != -1){
+  if ( argc == 1 ) help_menu();
+  while ((c = getopt (argc, argv, "hm:r:i:o:")) != -1){
     switch (c) {
       case 'h':
         help_menu();
@@ -88,14 +42,20 @@ int main(int argc, char *argv[]){
         fseek(OUTPUT, 0, SEEK_END);
         TOTAL_OUT = ftell(OUTPUT);
         rewind(OUTPUT);
-        printf("file size: %d", TOTAL_OUT);
+        printf("file size: %llu", TOTAL_OUT);
         break;
       case 'i':
         if (( ifp = fopen(optarg, "r") ) == NULL)
           error("could not open in file");
         break;
+      case 'r':  // resume option
+        RECOVER = optarg;
+        break;
+      case 'm':  // max output bytes
+        MAX_OUTPUT = atoll(optarg);
+        break;
       case '?':
-        if (optopt == 'o' || optopt == 'i' ){
+        if (optopt == 'o' || optopt == 'i' || optopt == 'r' || optopt == 'm' ){
           fprintf (stderr, "Option -%c requires an argument.\n", optopt);
           help_menu();
         } else{
@@ -141,6 +101,24 @@ int main(int argc, char *argv[]){
   fclose(ifp);
 
   return 0;
+}
+
+void output(PARAMS){
+  if ( RECOVER != NULL ){
+    if (strcmp(RECOVER, pass) == 0)
+      RECOVER=NULL;
+    return ;
+  }
+  if (OUTPUT == stdout){
+    TOTAL_OUT += fprintf(OUTPUT, "%s\n", pass);
+  } else{
+    if ( TOTAL_OUT == 0 ) printf("\n");
+    TOTAL_OUT += fprintf(OUTPUT, "%s\n", pass);
+    fflush(stdout);
+    printf("\rFile size: %10llu bytes\r\r", TOTAL_OUT);
+  }
+  if ( TOTAL_OUT >= MAX_OUTPUT ) 
+    error("Max OUTPUT exceded, exiting.");
 }
 
 void error(char *msg){
