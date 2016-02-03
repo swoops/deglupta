@@ -38,6 +38,7 @@ void help_menu(){
     "\t-r <pass>:    resume output after \"pass\"\n"
     "\t-m <num>:     aprox max output size (default: 4294967296 ie: 4G)\n"
     "\t                  Will be off by at most the length of the current password\n"
+    "\t                  -m -1 results in: 18446744073709551615 byte file size limit\n"
   );
   exit(1);
 }

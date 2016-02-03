@@ -52,7 +52,8 @@ int main(int argc, char *argv[]){
         RECOVER = optarg;
         break;
       case 'm':  // max output bytes
-        MAX_OUTPUT = atoll(optarg);
+        if (( MAX_OUTPUT = atoll(optarg) ) == 0)
+          error("-m flag invalid\n");
         break;
       case '?':
         if (optopt == 'o' || optopt == 'i' || optopt == 'r' || optopt == 'm' ){
@@ -66,6 +67,7 @@ int main(int argc, char *argv[]){
         abort();
     }
   }
+  printf("MAX_OUTPUT: %llu\n", MAX_OUTPUT);
   if ( ifp == NULL ) error("need input file.");
 
   // function list
