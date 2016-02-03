@@ -67,7 +67,6 @@ int main(int argc, char *argv[]){
         abort();
     }
   }
-  printf("MAX_OUTPUT: %llu\n", MAX_OUTPUT);
   if ( ifp == NULL ) error("need input file.");
 
   // function list
