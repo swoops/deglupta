@@ -2,7 +2,7 @@ CC = gcc
 
 CFLAGS = -Wall
 
-TARGET = mutator
+TARGET = deglupta
 LIBRARIES = 
 
 all: $(TARGET)
