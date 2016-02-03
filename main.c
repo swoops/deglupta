@@ -119,8 +119,18 @@ void output(PARAMS){
     fflush(stdout);
     printf("\rFile size: %10llu bytes\r\r", TOTAL_OUT);
   }
-  if ( TOTAL_OUT >= MAX_OUTPUT ) 
-    error("Max OUTPUT exceded, exiting.");
+  if ( TOTAL_OUT >= MAX_OUTPUT ){
+    fprintf(stderr, "MAX_OUTPUT exceded\n"
+        "\tMAX_OUTPUT: %llu\n"
+        "\toutput currently: %llu\n"
+        "\tresume with: -r %s\n"
+        "Change the -m paramater to get larger outputs\n",
+        MAX_OUTPUT,
+        TOTAL_OUT,
+        pass
+    );
+    exit(1);
+  } 
 }
 
 void error(char *msg){
