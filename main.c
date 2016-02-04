@@ -74,7 +74,11 @@ int main(int argc, char *argv[]){
   void *nxt_f[] = { 
     &space_replace,
     &punct_ending, 
+    &num_ending,
     &l33t, 
+    &num_ending,
+    &num_ending,
+    &num_ending,
     &ucase_flip,
     &output 
   };
@@ -174,6 +178,29 @@ void space_replace(PARAMS){
   }
 
 }
+void num_ending(PARAMS){
+  // append 0-9
+  // do twice to get 00-99, ect
+  int lpass = strlen(pass);
+  char pass_new[lpass + 2]; // room for null
+  pass_new[lpass] = 0x00;
+  pass_new[lpass+1] = 0x00;
+  void (*func)(PARAMS) = *nxt_f;
+
+  // send it unmollested
+  func(pass, 0, nxt_f+1);
+
+  strcpy(pass_new, pass);
+  int i;
+  for (i=0; i<10; i++){
+    // 0->0x30 9->0x39
+    // careful to only move one byte and not overwrite 
+    // something with the 4bytes in an int
+    // 0x004014e4    880c02       mov [rdx+rax], cl
+    pass_new[lpass] = (unsigned char )( i | 0x30 ); 
+    func(pass_new, 0, nxt_f+1);
+  }
+}
 void punct_ending(PARAMS){
   // MUST be NULL terminated
   char *endings[] = { "!", "!!", "!!!", "@", "@@", "#", "##", NULL };
@@ -196,8 +223,8 @@ void punct_ending(PARAMS){
   }
 }
 void l33t(PARAMS){
-  static char *normalc = "AEOT";
-  static char *leetc   = "@307";
+  static char *normalc = "AEOTI";
+  static char *leetc   = "@3071";
   static int len = 0;
   static int lpass = 0;
   if ( len ==0 ){  // same for all possible pass values

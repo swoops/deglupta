@@ -13,6 +13,7 @@ void punct_ending(PARAMS);
 void l33t(PARAMS);
 void ucase_flip(PARAMS);
 void output(PARAMS);
+void num_ending(PARAMS);
 
 
 void init_bounds(char *list[], int *ptr_l, int *ptr_max){
