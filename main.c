@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <signal.h>
 #include "main.h"
 
 int main(int argc, char *argv[]){
@@ -29,6 +30,20 @@ int main(int argc, char *argv[]){
   RECOVER = NULL;
   TOTAL_OUT = 0;
   MAX_OUTPUT = 0x0100000000; // 4294967296 or about 4G
+
+  // set up signal handling
+  struct sigaction new_action, old_action;
+
+  /* Set up the structure to specify the new action. */
+  new_action.sa_handler = die_nicely;
+  sigemptyset (&new_action.sa_mask);
+  new_action.sa_flags = 0;
+
+  sigaction (SIGINT, NULL, &old_action);
+  if (old_action.sa_handler != SIG_IGN)
+    sigaction (SIGINT, &new_action, NULL);
+  sigaction (SIGHUP, NULL, &old_action);
+
 
   if ( argc == 1 ) help_menu();
   while ((c = getopt (argc, argv, "hm:r:i:o:")) != -1){
@@ -71,16 +86,19 @@ int main(int argc, char *argv[]){
 
   // function list
   // TODO: all user to modify this list with command line parmaaters
+  // change this to change mutations used
+  // ALWAYS END WITH &output!!! else bad things...
   void *nxt_f[] = { 
+    &prepend_word,
     &space_replace,
     &punct_ending, 
-    &num_ending,
+    // &num_ending,
     &l33t, 
     &num_ending,
     &num_ending,
-    &num_ending,
+    // &num_ending,
     &ucase_flip,
-    &output 
+    &output  // don't touch this line on, change array before this only!!!
   };
 
   // make first function pointer into a 
@@ -122,10 +140,22 @@ void output(PARAMS){
     fflush(stdout);
     printf("\rFile size: %10llu bytes\r\r", TOTAL_OUT);
   }
+  if ( DIE ){
+    fprintf(stderr, "CTRL-C handled: \n"
+        "\tMAX_OUTPUT: %llu bytes\n"
+        "\toutput currently: %llu bytes\n"
+        "\tresume with: -r %s\n",
+        MAX_OUTPUT,
+        TOTAL_OUT,
+        pass
+    );
+    exit(1);
+  }
+
   if ( TOTAL_OUT >= MAX_OUTPUT ){
     fprintf(stderr, "MAX_OUTPUT exceded\n"
-        "\tMAX_OUTPUT: %llu\n"
-        "\toutput currently: %llu\n"
+        "\tMAX_OUTPUT: %llu bytes\n"
+        "\toutput currently: %llu bytes\n"
         "\tresume with: -r %s\n"
         "Change the -m paramater to get larger outputs\n",
         MAX_OUTPUT,
@@ -136,13 +166,6 @@ void output(PARAMS){
   } 
 }
 
-void error(char *msg){
-  if (errno) perror(msg);
-  else fprintf(stderr, "%s\n", msg);
-  if (errno == 0)
-    exit(1);
-  exit(errno);
-}
 void space_replace(PARAMS){
   // N means replace with nothing!!!
   char *rplc = "_-.N";  // replace with each character of this string
@@ -222,6 +245,31 @@ void punct_ending(PARAMS){
     func(pass_new, 0, nxt_f+1);
   }
 }
+
+void prepend_word(PARAMS){
+  // MUST be NULL terminated
+  char *words[] = { "Welcome ", NULL };
+  static int num_words = 0, longest_word = 0;
+  if (num_words == 0 || longest_word == 0)
+    init_bounds(words, &num_words, &longest_word);
+
+  int lpass = strlen(pass);
+  char pass_new[lpass + longest_word + 1];
+  strcpy(pass_new, pass);
+
+  void (*func)(PARAMS) = *nxt_f;
+
+  // send it unmollested
+  func(pass, 0, nxt_f+1);
+
+  int i;
+  for (i=0; i<num_words; i++){
+    sprintf(pass_new, "%s%s", words[i], pass);
+    func(pass_new, 0, nxt_f+1);
+  }
+
+}
+
 void l33t(PARAMS){
   static char *normalc = "AEOTI";
   static char *leetc   = "@3071";
