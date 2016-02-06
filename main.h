@@ -62,12 +62,16 @@ void die_nicely(int sig){
 void * get_da_func( char *fun_str){
   if ( fun_str == NULL ){
     printf(
-      "1 space_replace\n"
-      "2 punct_ending\n"
-      "3 prepend_word\n"
-      "4 l33t\n"
-      "5 ucase_flip\n"
-      "6 num_ending\n"
+      "\tfunction lists:\n"
+      "\t\t1 space_replace\n"
+      "\t\t2 punct_ending\n"
+      "\t\t3 prepend_word\n"
+      "\t\t4 l33t\n"
+      "\t\t5 ucase_flip\n"
+      "\t\t6 num_ending\n"
+      "\t example:\n"
+      "\t\t Prepends words then adds two digis to the end\n"
+      "\t\t ./deglupta -i /tmp/ifile -f 3,6,6:\n"
     );
     return NULL;
   }   
@@ -116,13 +120,17 @@ void * get_da_func( char *fun_str){
 
 void help_menu(){
   printf(
+    "deglupta: Password mutator so serious it may break your hard drive!\n"
     "\t-h:                 help menu\n"
     "\t-i <file>:          input file (required)\n"
     "\t-o <file>:          output file to append to (default: stdout)\n"
     "\t-r <pass>:          resume output after \"pass\"\n"
+    "\t-f  <str>:          list of functions to Travers, (default: 3,1,2,4,6,6,5)\n" 
     "\t-m <num>:           aprox max output size (default: 4294967296 ie: 4G)\n"
     "\t                    Will be off by at most the length of the current password\n"
     "\t                    -m -1 results in: 18446744073709551615 byte file size limit\n"
+    "\n"
   );
+  get_da_func(NULL);
   exit(1);
 }
