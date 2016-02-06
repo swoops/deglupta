@@ -59,6 +59,60 @@ void die_nicely(int sig){
   }
 
 }
+void * get_da_func( char *fun_str){
+  if ( fun_str == NULL ){
+    printf(
+      "1 space_replace\n"
+      "2 punct_ending\n"
+      "3 prepend_word\n"
+      "4 l33t\n"
+      "5 ucase_flip\n"
+      "6 num_ending\n"
+    );
+    return NULL;
+  }   
+  int len = strlen(fun_str);
+  // len("1,2,3,4,5") / 2 + 2 = 5 mutation functions, 1 output function, 1
+  void **fun_list = malloc( sizeof *fun_list * ( len/2 +2 ) );
+  if ( fun_list == NULL )
+    error("could not get memory for function list\n");
+  int i = 0;
+  for ( i=0; i<len; i++ ){
+    // double check the seperators for sanities
+    if ( i % 2 ){
+      if ( fun_str[i] == ',' )
+        continue;
+      else
+        error("-f paramater invalid");
+    }
+    switch( fun_str[i] ){
+      case '1':
+				fun_list[i/2] = &space_replace;
+        break;
+      case '2':
+				fun_list[i/2] = &punct_ending;
+        break;
+      case '3':
+				fun_list[i/2] = &prepend_word;
+        break;
+      case '4':
+				fun_list[i/2] = &l33t;
+        break;
+      case '5':
+				fun_list[i/2] = &ucase_flip;
+        break;
+      case '6':
+				fun_list[i/2] = &num_ending;
+        break;
+      default :
+        free( fun_list );
+        error("invalid function list\n");
+        break;
+    }
+  }
+  fun_list[i/2 + 1] = &output;
+  return fun_list;
+}
 
 void help_menu(){
   printf(

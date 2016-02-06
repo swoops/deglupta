@@ -33,6 +33,7 @@ int main(int argc, char *argv[]){
 
   // set up signal handling
   struct sigaction new_action, old_action;
+  void **nxt_f = NULL;
 
   /* Set up the structure to specify the new action. */
   new_action.sa_handler = die_nicely;
@@ -46,7 +47,7 @@ int main(int argc, char *argv[]){
 
 
   if ( argc == 1 ) help_menu();
-  while ((c = getopt (argc, argv, "hm:r:i:o:")) != -1){
+  while ((c = getopt (argc, argv, "hf:m:r:i:o:")) != -1){
     switch (c) {
       case 'h':
         help_menu();
@@ -70,8 +71,13 @@ int main(int argc, char *argv[]){
         if (( MAX_OUTPUT = atoll(optarg) ) == 0)
           error("-m flag invalid\n");
         break;
+      case 'f':  // max output bytes
+        nxt_f = get_da_func( optarg );
+        if ( nxt_f == NULL )
+          error("no fun lists...\n");
+        break;
       case '?':
-        if (optopt == 'o' || optopt == 'i' || optopt == 'r' || optopt == 'm' ){
+        if (optopt == 'o' || optopt == 'i' || optopt == 'r' || optopt == 'm' || optopt == 'f' ){
           fprintf (stderr, "Option -%c requires an argument.\n", optopt);
           help_menu();
         } else{
@@ -85,21 +91,10 @@ int main(int argc, char *argv[]){
   if ( ifp == NULL ) error("need input file.");
 
   // function list
-  // TODO: all user to modify this list with command line parmaaters
-  // change this to change mutations used
-  // ALWAYS END WITH &output!!! else bad things...
-  void *nxt_f[] = { 
-    &prepend_word,
-    &space_replace,
-    &punct_ending, 
-    // &num_ending,
-    &l33t, 
-    &num_ending,
-    &num_ending,
-    // &num_ending,
-    &ucase_flip,
-    &output  // don't touch this line on, change array before this only!!!
-  };
+  if ( nxt_f == NULL ){
+    nxt_f = get_da_func( "3,1,2,4,6,6,5" );
+  }
+
 
   // make first function pointer into a 
   // callable function "func"

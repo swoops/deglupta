@@ -21,6 +21,6 @@ If you find something wrong in my code I would love to hear about it.  If it
 is neat or cool I may find some way to reward you with a t-shirt, something
 I have on my desk, or some unpublished piece of code I have.
 # TODO
-* Allow users to submit a list of functions to run through.
 * Add more functions.
 * Make it more modular.
+* set up some good default function lists
