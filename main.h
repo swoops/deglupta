@@ -13,15 +13,16 @@ void punct_ending(PARAMS);
 void prepend_word(PARAMS);
 void l33t(PARAMS);
 void ucase_flip(PARAMS);
-void output(PARAMS);
 void num_ending(PARAMS);
+void identity(PARAMS);
+void output(PARAMS);
 
 void error(char *msg){
   if (errno) perror(msg);
   else fprintf(stderr, "%s\n", msg);
-  if (errno == 0)
-    exit(1);
-  exit(errno);
+
+  if (errno == 0) exit(1);
+  else exit(errno);
 }
 
 
@@ -63,12 +64,13 @@ void * get_da_func( char *fun_str){
   if ( fun_str == NULL ){
     printf(
       "\tfunction lists:\n"
-      "\t\t1 space_replace\n"
-      "\t\t2 punct_ending\n"
-      "\t\t3 prepend_word\n"
-      "\t\t4 l33t\n"
-      "\t\t5 ucase_flip\n"
-      "\t\t6 num_ending\n"
+      "\t\t1 space_replace - replace space characters with various other characters recursivly\n"
+      "\t\t2 punct_ending  - add various puncuations to the end of a password\n"
+      "\t\t3 prepend_word  - prepend various words to start of password\n"
+      "\t\t4 l33t          - recurisvly replace characters with l33t speak\n"
+      "\t\t5 ucase_flip    - flip upper case characters to lower recursivly\n"
+      "\t\t6 num_ending    - add a single digit [0-9] to the end of a password\n"
+      "\t\t7 identity      - Do nothing, search the main.c source for this, and modify it if you want to quicly do something\n"
       "\t example:\n"
       "\t\t Prepends words then adds two digis to the end\n"
       "\t\t ./deglupta -i /tmp/ifile -f 3,6,6:\n"
@@ -107,6 +109,9 @@ void * get_da_func( char *fun_str){
         break;
       case '6':
 				fun_list[i/2] = &num_ending;
+        break;
+      case '7':
+				fun_list[i/2] = &identity;
         break;
       default :
         free( fun_list );

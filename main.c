@@ -169,7 +169,7 @@ void space_replace(PARAMS){
   int lpass = strlen(pass);
   void (*func)(PARAMS) = *nxt_f;
 
-  // send it unmollested
+  // send it unmolested
   func(pass, 0, nxt_f+1);
 
   // room to work
@@ -205,7 +205,7 @@ void num_ending(PARAMS){
   pass_new[lpass+1] = 0x00;
   void (*func)(PARAMS) = *nxt_f;
 
-  // send it unmollested
+  // send it unmolested
   func(pass, 0, nxt_f+1);
 
   strcpy(pass_new, pass);
@@ -230,7 +230,7 @@ void punct_ending(PARAMS){
   char pass_new[lpass + punct_max_add + 1];
   void (*func)(PARAMS) = *nxt_f;
 
-  // send it unmollested
+  // send it unmolested
   func(pass, 0, nxt_f+1);
 
   strcpy(pass_new, pass);
@@ -254,7 +254,7 @@ void prepend_word(PARAMS){
 
   void (*func)(PARAMS) = *nxt_f;
 
-  // send it unmollested
+  // send it unmolested
   func(pass, 0, nxt_f+1);
 
   int i;
@@ -288,11 +288,11 @@ void l33t(PARAMS){
         strcpy(holder, pass);
         holder[cnt] = leetc[cl];
         if ( cnt != lpass ){
-          l33t(pass  , cnt+1,   nxt_f); // send it UNmollested
-          l33t(holder, cnt+1,   nxt_f); // send it   mollested
+          l33t(pass  , cnt+1,   nxt_f); // send it UNmolested
+          l33t(holder, cnt+1,   nxt_f); // send it   molested
         }else{
-          func(pass  ,     0, nxt_f+1); // send it UNmollested
-          func(holder,     0, nxt_f+1); // send it   mollested
+          func(pass  ,     0, nxt_f+1); // send it UNmolested
+          func(holder,     0, nxt_f+1); // send it   molested
         }
         return;
       }
@@ -313,15 +313,50 @@ void ucase_flip(PARAMS){
       strcpy(holder, pass);
       holder[cnt] = pass[cnt] + 0x20;
       if ( cnt != lpass ){
-        ucase_flip(pass  , cnt+1,   nxt_f); // send it UNmollested
-        ucase_flip(holder, cnt+1,   nxt_f); // send it   mollested
+        ucase_flip(pass  , cnt+1,   nxt_f); // send it UNmolested
+        ucase_flip(holder, cnt+1,   nxt_f); // send it   molested
       }else{
-        func(pass  ,     0, nxt_f+1); // send it UNmollested
-        func(holder,     0, nxt_f+1); // send it   mollested
+        func(pass  ,     0, nxt_f+1); // send it UNmolested
+        func(holder,     0, nxt_f+1); // send it   molested
       }
       return;
     }
   }
   func(pass  ,     0, nxt_f+1);
 
+}
+
+// CHANGE_ME: if you want a custom function just add it here
+void identity(PARAMS){
+  // func is now the next function on the list
+  void (*func)(PARAMS) = *nxt_f;
+
+  // always pass the password on to the next function unmolested
+  func(pass  ,     0, nxt_f+1); // send it unmolested
+
+  return;  // remove this to make this function do more
+
+  /*
+    lpass = strlen(pass); // char *pass contains password string
+
+
+    // the cnt variable is available to know where you have recursed
+    // on your self  change this if you are going to use it
+    if ( cnt != 0 ) error("always should pass 0 to next function");
+
+
+
+    // get some room on the stack for a new password to mutate
+    // don't mutate pass because the previous function might
+    // be using it.  Make sure you have enough room to do what you
+    // want and a null byte
+    int extra_needed = 10;
+    char holder[lpass+extra+needed+1];
+    strcpy(holder, pass);  // understand if it is possible to have an overflow here.
+
+    // do stuff to holder
+    holder[lpass+1] = "9";
+    holder[lpass+2] = 0x00;  // make sure you null terminate
+    func(holder, 0, nxt_f+1);  // pass to the next function
+  */
 }
