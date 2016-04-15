@@ -221,7 +221,7 @@ void num_ending(PARAMS){
 }
 void punct_ending(PARAMS){
   // MUST be NULL terminated
-  char *endings[] = { "!", "!!", "!!!", "@", "@@", "#", "##", NULL };
+  char *endings[] = { "!", "^", "$", "&", "^", "#", "@", "~", "%", "*", NULL };
   static int punct_len = 0, punct_max_add = 0;
   if ( punct_len == 0 || punct_max_add == 0 )
     init_bounds(endings, &punct_len, &punct_max_add);
